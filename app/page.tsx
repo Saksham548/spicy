@@ -108,7 +108,7 @@ export default function Home() {
             <form className="space-y-4">
               <input type="text" placeholder="Your Name" className="w-full p-3 border rounded-lg" required />
               <input type="email" placeholder="Your Email" className="w-full p-3 border rounded-lg" required />
-              <textarea placeholder="Your Message" rows="5" className="w-full p-3 border rounded-lg" required></textarea>
+              <textarea placeholder="Your Message" className="w-full p-3 border rounded-lg" required></textarea>
               <button type="submit" className="bg-red-600 text-white px-6 py-3 rounded-lg">Send Message</button>
             </form>
           </div>
