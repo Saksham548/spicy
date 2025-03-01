@@ -7,7 +7,7 @@ import Wave from 'react-wavify'
 
 export default function Home() {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const carouselRef = useRef(null);
+  const carouselRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
   const products = [
@@ -47,16 +47,23 @@ export default function Home() {
 
   useEffect(() => {
     const carousel = carouselRef.current;
-    carousel.addEventListener('touchstart', handleTouchStart);
-    carousel.addEventListener('touchmove', handleTouchMove);
-    carousel.addEventListener('touchend', handleTouchEnd);
-
+    if (!carousel) return;
+  
+    const handleTouchStartNative = (e: TouchEvent) => handleTouchStart(e as unknown as React.TouchEvent<HTMLDivElement>);
+    const handleTouchMoveNative = (e: TouchEvent) => handleTouchMove(e as unknown as React.TouchEvent<HTMLDivElement>);
+    const handleTouchEndNative = (e: TouchEvent) => handleTouchEnd();
+  
+    carousel.addEventListener('touchstart', handleTouchStartNative);
+    carousel.addEventListener('touchmove', handleTouchMoveNative);
+    carousel.addEventListener('touchend', handleTouchEndNative);
+  
     return () => {
-      carousel.removeEventListener('touchstart', handleTouchStart);
-      carousel.removeEventListener('touchmove', handleTouchMove);
-      carousel.removeEventListener('touchend', handleTouchEnd);
+      carousel.removeEventListener('touchstart', handleTouchStartNative);
+      carousel.removeEventListener('touchmove', handleTouchMoveNative);
+      carousel.removeEventListener('touchend', handleTouchEndNative);
     };
   }, []);
+  
   return (
     <div className="bg-orange-50 min-h-screen font-sans text-gray-800">
       {/* Navbar */}
