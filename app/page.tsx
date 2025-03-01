@@ -1,12 +1,15 @@
 'use client';
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState } from 'react';
-
+import { motion } from 'framer-motion';
+import Wave from 'react-wavify'
 
 export default function Home() {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const carouselRef = useRef(null);
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
   const products = [
     { src: '/assets/Spicy_CornPuff.jpg', title: 'Corn Puff', description: 'Puffy snacks made of corn' },
     { src: '/assets/Spicy_Jungle.jpg', title: 'Jungle', description: 'Jungle inspired chips' },
@@ -18,13 +21,42 @@ export default function Home() {
     { src: '/assets/Spicy_Ogee.jpg', title: 'Ogee', description: 'Short description here' }
   ];
 
+  const slidesToShow = 2;
+  const totalSlides = Math.ceil(products.length / slidesToShow);
+
   const prevSlide = () => {
-    setCurrentIndex((prevIndex) => (prevIndex === 0 ? Math.floor(products.length / 2) - 1 : prevIndex - 1));
+    setCurrentIndex((prevIndex) => (prevIndex === 0 ? totalSlides - 1 : prevIndex - 1));
   };
 
   const nextSlide = () => {
-    setCurrentIndex((prevIndex) => (prevIndex === Math.floor(products.length / 2) - 1 ? 0 : prevIndex + 1));
+    setCurrentIndex((prevIndex) => (prevIndex === totalSlides - 1 ? 0 : prevIndex + 1));
   };
+
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchMove = (e) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStartX.current - touchEndX.current > 50) nextSlide();
+    if (touchStartX.current - touchEndX.current < -50) prevSlide();
+  };
+
+  useEffect(() => {
+    const carousel = carouselRef.current;
+    carousel.addEventListener('touchstart', handleTouchStart);
+    carousel.addEventListener('touchmove', handleTouchMove);
+    carousel.addEventListener('touchend', handleTouchEnd);
+
+    return () => {
+      carousel.removeEventListener('touchstart', handleTouchStart);
+      carousel.removeEventListener('touchmove', handleTouchMove);
+      carousel.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, []);
   return (
     <div className="bg-orange-50 min-h-screen font-sans text-gray-800">
       {/* Navbar */}
@@ -45,13 +77,60 @@ export default function Home() {
       </header>
 
       {/* Landing Section */}
-      <section id="landing" className="h-screen bg-cover bg-center flex items-center justify-center text-center text-white p-4" style={{ backgroundImage: 'url(/assets/Spicy_Hero.png)',  }}>
-        <div className="bg-black bg-opacity-50 p-8 rounded-lg max-w-2xl">
-          <h2 className="text-5xl font-bold mb-4">Welcome to <span className='text-[#E8801B] [text-shadow:_2px_2px_0_rgb(0_0_0_/_100%)]'>Spicy</span></h2>
-          <p className="text-xl mb-6">Where flavor meets crunch! Explore our range of chips and snacks.</p>
-          <Link href="#products" className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg">Explore Now</Link>
-        </div>
+      <section id="landing" className="relative text-center h-screen flex justify-center items-center overflow-hidden">
+        <video autoPlay loop muted className="absolute top-0 left-0 w-full h-full object-cover z-0">
+          <source src="/assets/hero_background.mp4" type="video/mp4" />
+        </video>
+        <motion.div 
+          initial={{ opacity: 0, x: 100 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 1 }}
+          className="absolute top-0 right-40 z-10 p-8 rounded-lg max-w-lg"
+        >
+          <motion.h1 
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 1 }}
+            className="text-6xl font-extrabold mb-4"
+          >
+            Welcome to <span className='text-[#E8801B] [text-shadow:_2px_2px_0_rgb(0_0_0_/_100%)]'>Spicy</span>
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1, duration: 1 }}
+            className="text-xl font-semibold"
+          >
+            Delighting your taste buds with bold flavors and crunchy snacks. Indulge in the magic of spice!
+          </motion.p>
+          <motion.button 
+            whileHover={{ scale: 1.1 }}
+            className="mt-8 bg-yellow-400 text-purple-900 px-8 py-4 rounded-full font-bold hover:bg-yellow-300"
+          >
+            Explore Our Products
+          </motion.button>
+        </motion.div>
       </section>
+
+      <div className="w-full overflow-hidden leading-none rotate-180">
+  <Wave 
+    fill="url(#gradient)"
+    options={{
+      height: 20,
+      amplitude: 40,
+      speed: 0.2,
+      points: 3
+    }}
+  >
+    <defs>
+      <linearGradient id="gradient" gradientTransform="rotate(90)">
+        <stop offset="10%" stopColor="#d4af37" />
+        <stop offset="90%" stopColor="#f00" />
+      </linearGradient>
+    </defs>
+  </Wave>
+</div>
+
 
       {/* About Us Section */}
       <section id="about" className="py-20 bg-white px-4">
@@ -60,33 +139,58 @@ export default function Home() {
             <Image src="/assets/Spicy_Logo.jpg" alt="Spicy Logo" width={150} height={150} className="rounded-lg" />
             <Image src="/assets/Sajal.jpg" alt="Sajal" width={150} height={150} className="rounded-lg" />
           </div>
-          <div className="text-center md:text-left">
-            <h2 className="text-4xl font-bold mb-6">About Us</h2>
-            <p className="text-lg max-w-2xl">Launched since 21st February 2004, Spicy has been dedicated to deliver bold flavors and crispy snacks. Our mission is to spice up your day with every bite! With a variety of unique recipes and a passion for taste, we ensure every snack is crafted with care and creativity.</p>
-            <p className="text-lg max-w-2xl mt-4">Our factory is setup in Mansa, Punjab and all the products are loved by children of that region. Now we wish to expand more...</p>
-          </div>
+          <div className="text-center md:text-left flex flex-col gap-3">
+            <motion.h2 
+            className="text-4xl font-bold mb-6"
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1 }}
+          >
+            About Us
+          </motion.h2>
+          <motion.p 
+            className="text-lg max-w-2xl mx-auto"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5, duration: 1 }}
+          >
+            Spicy is your go-to brand for crispy, spicy, and mouth-watering snacks. We blend flavors and creativity to bring you the best taste in every bite. Join us in our journey of crunchy goodness!
+          </motion.p>
+          <motion.p 
+            className="text-lg max-w-2xl mx-auto"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5, duration: 1 }}
+          >
+           Launched since 21st February 2004, Spicy has been dedicated to deliver bold flavors and crispy snacks. Our mission is to spice up your day with every bite! With a variety of unique recipes and a passion for taste, we ensure every snack is crafted with care and creativity. Our factory is setup in Mansa, Punjab and all the products are loved by children of that region. Now we wish to expand more...</motion.p></div>
+           
         </div>
+        
       </section>
 
+
+
       {/* Our Products Section */}
-      <section id="products" className="py-20 bg-orange-100 px-4">
+      <div className="bg-orange-50 min-h-screen font-sans text-gray-800">
+      <section id="products" className="py-20 bg-orange-50 min-h-screen font-sans text-gray-800">
         <div className="container mx-auto text-center">
           <h2 className="text-4xl font-bold mb-6">Our Products</h2>
-          <div className="relative w-full max-w-3xl mx-auto overflow-hidden">
-            <div className="flex transition-transform duration-500" style={{ transform: `translateX(-${currentIndex * 100}%)` }}>
+          <div ref={carouselRef} className="relative w-full max-w-4xl mx-auto overflow-hidden rounded-lg shadow-lg">
+            <div className="flex transition-transform duration-500 ease-in-out" style={{ transform: `translateX(-${currentIndex * 100}%)` }}>
               {products.map((product, index) => (
-                <div key={index} className="w-1/2 flex-shrink-0 p-4">
-                  <Image src={product.src} alt={product.title} width={600} height={400} className="w-full h-64 object-cover rounded-md" />
+                <div key={index} className="w-1/2 flex-shrink-0 p-4 bg-white h-96">
+                  <Image src={product.src} alt={product.title} width={600} height={400} className="w-full h-72 object-cover rounded-md" />
                   <h3 className="text-2xl font-semibold mt-4">{product.title}</h3>
                   <p className="text-lg">{product.description}</p>
                 </div>
               ))}
             </div>
-            <button onClick={prevSlide} className="absolute top-1/2 left-4 transform -translate-y-1/2 bg-red-600 text-white p-2 rounded-full">&#10094;</button>
-            <button onClick={nextSlide} className="absolute top-1/2 right-4 transform -translate-y-1/2 bg-red-600 text-white p-2 rounded-full">&#10095;</button>
+            <button onClick={prevSlide} className="absolute top-1/2 left-4 transform -translate-y-1/2 bg-red-600 text-white p-3 rounded-full shadow-lg hover:bg-red-500">&#10094;</button>
+            <button onClick={nextSlide} className="absolute top-1/2 right-4 transform -translate-y-1/2 bg-red-600 text-white p-3 rounded-full shadow-lg hover:bg-red-500">&#10095;</button>
           </div>
         </div>
       </section>
+    </div>
 
       {/* Contact Us Section */}
       <section id="contact" className="py-20 bg-white px-4">
