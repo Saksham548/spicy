@@ -32,11 +32,11 @@ export default function Home() {
     setCurrentIndex((prevIndex) => (prevIndex === totalSlides - 1 ? 0 : prevIndex + 1));
   };
 
-  const handleTouchStart = (e) => {
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
     touchStartX.current = e.touches[0].clientX;
   };
 
-  const handleTouchMove = (e) => {
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
     touchEndX.current = e.touches[0].clientX;
   };
 
